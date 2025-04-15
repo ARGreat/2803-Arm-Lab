@@ -39,16 +39,38 @@ d0 = Kptheta.*Kg*Km/(J*Rm);
 % Step function values, multiplied by 0.5 to get to 0.5 amplitude
 names = ["Set1", "Set2", "Set3", "Set4", "Set5", "Set6"];
 
-for i = 1:Ns
-    num = n1(i);
-    den = [d2 d1(i) d0(i)];
-    sysTF = tf(num,den);
-    [x,t] = step(sysTF);
-    xdatastepfunc.(names(i)) = x./2;
-    tdatastepfunc.(names(i)) = t./2;
+% Extra stuff for lsim
+tstart = 0;
+tstep = 0.01;
+tmax = 10-tstep;
+time = tstart:tstep:tmax; % Time vector of simulation time
+desiredtheta = 0.5; % [rad], desired radians
+
+uchoice = 1;
+
+if uchoice == 1
+    u = desiredtheta.*ones(size(time)); % Vector of desired radians for 1 val
+else
+    % Alternate from 0.5 to -0.5 in half of time
+    u = zeros(1,length(time));
+    u(:,1:length(time)/2 - 1) = 0.5.*ones(1,length(time)/2 - 1); 
+    u(:,length(time)/2:length(time)) = -0.5.*ones(1,length(time)/2 + 1);
 end
 
-% Lsim values
+for i = 1:Ns
+    % Numerator and Denominator Values
+    num = n1(i);
+    den = [d2 d1(i) d0(i)];
+    % System for input
+    sysTF = tf(num,den);
+    % Step sim
+    [x,t] = step(sysTF);
+    % Lsim sim
+    x2 = lsim(sysTF,u,time);
+    xdatastepfunc.(names(i)) = x./2;
+    tdatastepfunc.(names(i)) = t./2;
+    xdatalsimfunc.(names(i)) = x2;
+end
 
 %% Graphing
 % Graph for Step function values
@@ -62,3 +84,11 @@ ylabel('Theta (rad)');
 legend(names);
 
 % Graph for lsim
+figure(); hold on;
+for i=1:Ns
+     plot(time,xdatalsimfunc.(names(i)));
+end
+title('Lsim Response for Varied Proportional and Derivative Gains');
+xlabel('Time (s)');
+ylabel('Theta (rad)');
+legend(names,location="best");
