@@ -92,3 +92,44 @@ title('Lsim Response for Varied Proportional and Derivative Gains');
 xlabel('Time (s)');
 ylabel('Theta (rad)');
 legend(names,location="best");
+
+%% 2.4 Designing K1 and K3 for less than 20% overshoot, 5% settling error in < 1 sec
+% Gains Values
+Kpthetatest = 10; % K1 - proportional
+Kdthetatest = -1; % K3 - derivative
+
+% Values for system
+n1test = Kpthetatest .* Kg * Km / (J*Rm);
+d2test = 1;
+d1test = (Kg^2*Km^2/(J*Rm) + Kdthetatest.*Kg*Km/(J*Rm));
+d0test = Kpthetatest.*Kg*Km/(J*Rm);
+
+% Extra stuff for lsim
+tstarttest = 0;
+tsteptest = 0.01;
+% tmaxtest = 20-tsteptest;
+tmaxtest = 20 - tsteptest;
+timetest = tstarttest:tsteptest:tmaxtest; % Time vector of simulation time
+desiredthetatest = 0.5; % [rad], desired radians
+
+utest = desiredthetatest.*ones(size(timetest));
+
+% Numerator and Denominator Values
+numtest = n1test;
+dentest = [d2test d1test d0test];
+
+% System for Input
+sysTFtest = tf(numtest,dentest);
+
+xtest = lsim(sysTFtest,utest,timetest);
+
+% Creating Graph With Bounds
+figure(); hold on;
+plot(timetest,xtest);
+title('Lsim Response for Testing Gains');
+xlabel('Times (s)');
+ylabel('Theta (rad)');
+
+% 20% bounds for 0.5 rad and -0.5 rad
+yline(desiredthetatest*0.2 + desiredthetatest,'--r');
+yline(-desiredthetatest*0.2 + desiredthetatest,'--r');
