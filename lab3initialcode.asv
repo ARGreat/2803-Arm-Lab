@@ -138,23 +138,17 @@ yline(desiredthetatest*0.2 + desiredthetatest,'--r');
 yline(-desiredthetatest*0.2 + desiredthetatest,'--r');
 
 
-%% 2.4c  Proccessing Hardware Data
+%%2.4c  Proccessing Hardware Data
 
 HardwareIVData = readtable("ControlArmData-004-09");
-
+HardwareIVData.Var1 = (HardwareIVData.Var1 - HardwareIVData.Var1(1))/1000;
 
 %Trim Index
 figure; hold on;
 index = 7386;
-ExpTime = HardwareIVData.Var1(index:end);
-ExpInput = HardwareIVData.Var6(index:end);
-ExpPosition = HardwareIVData.Var2(index:end);
-
-%Set Time to 0;
-ExpTime = (ExpTime - ExpTime(1))/1000;
-
-plot(ExpTime,ExpInput);
-plot(ExpTime,ExpPosition);
+ = HardwareIVData.Var1(indexL:end);
+plot(HardwareIVData.Var1,HardwareIVData.Var6);
+plot(HardwareIVData.Var1,HardwareIVData.Var2);
 plot(timetest,xtest);
 title("")
 time = toc
