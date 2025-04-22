@@ -98,8 +98,9 @@ legend(names,location="best");
 
 %% 2.4 Designing K1 and K3 for less than 20% overshoot, 5% settling error in < 1 sec
 % Gains Values
-Kpthetatest = 10; % K1 - proportional
-Kdthetatest = 1; % K3 - derivative
+
+Kpthetatest = 18; % K1 - proportional
+Kdthetatest = 1.5; % K3 - derivative, max 1.5
 
 % Values for system
 n1test = Kpthetatest .* Kg * Km / (J*Rm);
@@ -110,12 +111,13 @@ d0test = Kpthetatest.*Kg*Km/(J*Rm);
 % Extra stuff for lsim
 tstarttest = 0;
 tsteptest = 0.01;
-% tmaxtest = 20-tsteptest;
-tmaxtest = 20 - tsteptest;
+tmaxtest = 10 - tsteptest;
 timetest = tstarttest:tsteptest:tmaxtest; % Time vector of simulation time
 desiredthetatest = 0.5; % [rad], desired radians
 
-utest = desiredthetatest.*ones(size(timetest));
+utest = zeros(1,length(timetest));
+utest(:,1:length(timetest)/2 - 1) = 0.5.*ones(1,length(timetest)/2 - 1); 
+utest(:,length(timetest)/2:length(timetest)) = -0.5.*ones(1,length(timetest)/2 + 1);
 
 % Numerator and Denominator Values
 numtest = n1test;
@@ -124,12 +126,13 @@ dentest = [d2test d1test d0test];
 % System for Input
 sysTFtest = tf(numtest,dentest);
 
+% X values for test from lsim
 xtest = lsim(sysTFtest,utest,timetest);
 
 % Creating Graph With Bounds
 figure(); hold on;
-plot(timetest,xtest);
-title('Lsim Response for Testing Gains');
+plot(timetest,xtest,'k',LineWidth=2);
+title(sprintf('Lsim Response for Testing Gains (%0.2f K1, %0.2f K3)',Kpthetatest,Kdthetatest));
 xlabel('Times (s)');
 ylabel('Theta (rad)');
 
@@ -137,11 +140,33 @@ ylabel('Theta (rad)');
 yline(desiredthetatest*0.2 + desiredthetatest,'--r');
 yline(-desiredthetatest*0.2 + desiredthetatest,'--r');
 
+yline(desiredthetatest*0.2 - desiredthetatest,'--r');
+yline(-desiredthetatest*0.2 - desiredthetatest,'--r');
+
+% 5% bounds for 0.5 rad and -0.5 rad
+yline(desiredthetatest*0.05 + desiredthetatest,'--g');
+yline(-desiredthetatest*0.05 + desiredthetatest,'--g');
+yline(desiredthetatest*0.05 - desiredthetatest,'--g');
+yline(-desiredthetatest*0.05 - desiredthetatest,'--g');
+
+% Step input time (0 and 10 sec)
+xline(0,'--m');
+xline(5,'--m');
+
+% 1 sec settling lines (1 and 11 sec)
+xline(1,'--b');
+xline(6,'--b');
+
+% Legend
+legend("Theoretical Data","20% Bounds","","","","5% Settling Bounds","","","","Input","","1 Second to Settle","",location="eastoutside");
+
+% Bounds for Graphs
+xlim([-0.1 10])
+ylim([-0.7 0.7]);
 
 %% 2.4c  Proccessing Hardware Data
 
 HardwareIVData = readtable("ControlArmData-004-09");
-
 
 %Trim Index
 figure; hold on;
@@ -153,8 +178,12 @@ ExpPosition = HardwareIVData.Var2(index:end);
 %Set Time to 0;
 ExpTime = (ExpTime - ExpTime(1))/1000;
 
-plot(ExpTime,ExpInput);
+%Plot
 plot(ExpTime,ExpPosition);
 plot(timetest,xtest);
-title("")
+plot(ExpTime,ExpInput);
+title("Theoretical vs. Experimental");
+legend("Experimental Position","Theoretical Position","Input Function");
+xlabel("Time (Seconds)");
+ylabel("Position (Radians)");
 time = toc
