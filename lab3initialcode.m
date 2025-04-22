@@ -110,7 +110,7 @@ d0test = Kpthetatest.*Kg*Km/(J*Rm);
 % Extra stuff for lsim
 tstarttest = 0;
 tsteptest = 0.01;
-tmaxtest = 10 - tsteptest;
+tmaxtest = 20 - tsteptest;
 timetest = tstarttest:tsteptest:tmaxtest; % Time vector of simulation time
 desiredthetatest = 0.5; % [rad], desired radians
 
@@ -161,7 +161,7 @@ xline(6,'--b');
 legend("Theoretical Data","20% Bounds","","","","5% Settling Bounds","","","","Input","","1 Second to Settle","",location="eastoutside");
 
 % Bounds for Graphs
-xlim([-0.1 20]);
+xlim([-0.1 40]);
 ylim([-0.7 0.7]);
 
 %% 2.4c  Proccessing Hardware Data
@@ -171,10 +171,15 @@ HardwareIVData = readtable("ControlArmData-004-09");
 %Trim Index
 figure; hold on;
 index = 7386;
-ExpTime = HardwareIVData.Var1(index:end);
-ExpInput = HardwareIVData.Var6(index:end);
-ExpPosition = HardwareIVData.Var2(index:end);
+endIndx = 20000;
+ExpTime = HardwareIVData.Var1(index:endIndx);
+ExpInput = HardwareIVData.Var6(index:endIndx);
+ExpPosition = HardwareIVData.Var2(index:endIndx);
 
+Startindex = 1000;
+EndIndex = 2000;
+timetest = timetest(Startindex:EndIndex) - timetest(Startindex);
+xtest = xtest(Startindex:EndIndex);
 %Set Time to 0;
 ExpTime = (ExpTime - ExpTime(1))/1000;
 
@@ -183,7 +188,31 @@ plot(ExpTime,ExpPosition);
 plot(timetest,xtest);
 plot(ExpTime,ExpInput);
 title("Theoretical vs. Experimental");
-legend("Experimental Position","Theoretical Position","Input Function");
 xlabel("Time (Seconds)");
 ylabel("Position (Radians)");
+xlim([-0.1 10]);
+
+
+% 20% bounds for 0.5 rad and -0.5 rad
+yline(desiredthetatest*0.2 + desiredthetatest,'--r');
+yline(-desiredthetatest*0.2 + desiredthetatest,'--r');
+yline(desiredthetatest*0.2 - desiredthetatest,'--r');
+yline(-desiredthetatest*0.2 - desiredthetatest,'--r');
+
+% 5% bounds for 0.5 rad and -0.5 rad
+yline(desiredthetatest*0.05 + desiredthetatest,'--g');
+yline(-desiredthetatest*0.05 + desiredthetatest,'--g');
+yline(desiredthetatest*0.05 - desiredthetatest,'--g');
+yline(-desiredthetatest*0.05 - desiredthetatest,'--g');
+
+% Step input time (0 and 10 sec)
+xline(0,'--m');
+xline(5,'--m');
+
+% 1 sec settling lines (1 and 11 sec)
+xline(1,'--b');
+xline(6,'--b');
+
+legend("Experimental Position","Theoretical Position","Input Function","20% Bounds","","","","5% Settling Bounds","","","","Input","","1 Second to Settle","",location="eastoutside");
+
 time = toc
