@@ -98,7 +98,6 @@ legend(names,location="best");
 
 %% 2.4 Designing K1 and K3 for less than 20% overshoot, 5% settling error in < 1 sec
 % Gains Values
-
 Kpthetatest = 18; % K1 - proportional
 Kdthetatest = 1.5; % K3 - derivative, max 1.5
 
@@ -139,7 +138,6 @@ ylabel('Theta (rad)');
 % 20% bounds for 0.5 rad and -0.5 rad
 yline(desiredthetatest*0.2 + desiredthetatest,'--r');
 yline(-desiredthetatest*0.2 + desiredthetatest,'--r');
-
 yline(desiredthetatest*0.2 - desiredthetatest,'--r');
 yline(-desiredthetatest*0.2 - desiredthetatest,'--r');
 
