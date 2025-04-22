@@ -115,8 +115,10 @@ timetest = tstarttest:tsteptest:tmaxtest; % Time vector of simulation time
 desiredthetatest = 0.5; % [rad], desired radians
 
 utest = zeros(1,length(timetest));
-utest(:,1:length(timetest)/2 - 1) = 0.5.*ones(1,length(timetest)/2 - 1); 
-utest(:,length(timetest)/2:length(timetest)) = -0.5.*ones(1,length(timetest)/2 + 1);
+utest(:,1:length(timetest)/4 - 1) = 0.5.*ones(1,length(timetest)/4 - 1); 
+utest(:,(length(timetest)/4 - 1):(length(timetest)/2 - 1)) = -0.5.*ones(1,length(timetest)/4 + 1);
+utest(:,(length(timetest)/2 + 1):(length(timetest)*3/4) - 1) = 0.5.*ones(1,length(timetest)/4 - 1); 
+utest(:,(length(timetest)*3/4):(length(timetest))) = -0.5.*ones(1,length(timetest)/4 + 1);
 
 % Numerator and Denominator Values
 numtest = n1test;
@@ -159,7 +161,7 @@ xline(6,'--b');
 legend("Theoretical Data","20% Bounds","","","","5% Settling Bounds","","","","Input","","1 Second to Settle","",location="eastoutside");
 
 % Bounds for Graphs
-xlim([-0.1 10])
+xlim([-0.1 20]);
 ylim([-0.7 0.7]);
 
 %% 2.4c  Proccessing Hardware Data
