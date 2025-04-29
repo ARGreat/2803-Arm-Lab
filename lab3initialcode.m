@@ -185,13 +185,12 @@ ExpTime = (ExpTime - ExpTime(1))/1000;
 
 %Plot
 plot(ExpTime,ExpPosition);
-plot(timetest,xtest);
+%plot(timetest,xtest);
 plot(ExpTime,ExpInput);
-title("Theoretical vs. Experimental");
+title("Experimental Data Analysis");
 xlabel("Time (Seconds)");
 ylabel("Position (Radians)");
 xlim([-0.1 10]);
-
 
 % 20% bounds for 0.5 rad and -0.5 rad
 yline(desiredthetatest*0.2 + desiredthetatest,'--r');
@@ -213,6 +212,79 @@ xline(5,'--m');
 xline(1,'--b');
 xline(6,'--b');
 
-legend("Experimental Position","Theoretical Position","Input Function","20% Bounds","","","","5% Settling Bounds","","","","Input","","1 Second to Settle","",location="eastoutside");
 
+
+legend("Experimental Position","Input Function","20% Bounds","","","","5% Settling Bounds","","","","Input","","1 Second to Settle","",location="eastoutside");
+%legend("Experimental Position","Theoretical Position","Input Function","20% Bounds","","","","5% Settling Bounds","","","","Input","","1 Second to Settle","",location="eastoutside");
 time = toc
+
+%% 3.2d
+figure; hold on;
+plot(timetest,xtest);
+
+% Gains Values
+Kpthetatest = 18; % K1 - proportional
+Kdthetatest = 2.35; % K3 - derivative, max 1.5
+
+% Values for system
+n1test = Kpthetatest .* Kg * Km / (J*Rm);
+d2test = 1;
+d1test = (Kg^2*Km^2/(J*Rm) + Kdthetatest.*Kg*Km/(J*Rm));
+d0test = Kpthetatest.*Kg*Km/(J*Rm);
+
+% Extra stuff for lsim
+tstarttest = 0;
+tsteptest = 0.01;
+tmaxtest = 20 - tsteptest;
+timetest = tstarttest:tsteptest:tmaxtest; % Time vector of simulation time
+desiredthetatest = 0.5; % [rad], desired radians
+
+utest = zeros(1,length(timetest));
+utest(:,1:length(timetest)/4 - 1) = 0.5.*ones(1,length(timetest)/4 - 1); 
+utest(:,(length(timetest)/4 - 1):(length(timetest)/2 - 1)) = -0.5.*ones(1,length(timetest)/4 + 1);
+utest(:,(length(timetest)/2 + 1):(length(timetest)*3/4) - 1) = 0.5.*ones(1,length(timetest)/4 - 1); 
+utest(:,(length(timetest)*3/4):(length(timetest))) = -0.5.*ones(1,length(timetest)/4 + 1);
+
+% Numerator and Denominator Values
+numtest = n1test;
+dentest = [d2test d1test d0test];
+
+% System for Input
+SysTFtest = tf(numtest,dentest);
+
+% X values for test from lsim
+NewXtest = lsim(sysTFtest,utest,timetest);
+
+
+%Plot
+plot(timetest,NewXtest)
+plot(ExpTime,ExpPosition);
+plot(ExpTime,ExpInput);
+title("Experimental Data Analysis");
+xlabel("Time (Seconds)");
+ylabel("Position (Radians)");
+xlim([-0.1 10]);
+
+% 20% bounds for 0.5 rad and -0.5 rad
+yline(desiredthetatest*0.2 + desiredthetatest,'--r');
+yline(-desiredthetatest*0.2 + desiredthetatest,'--r');
+yline(desiredthetatest*0.2 - desiredthetatest,'--r');
+yline(-desiredthetatest*0.2 - desiredthetatest,'--r');
+
+% 5% bounds for 0.5 rad and -0.5 rad
+yline(desiredthetatest*0.05 + desiredthetatest,'--g');
+yline(-desiredthetatest*0.05 + desiredthetatest,'--g');
+yline(desiredthetatest*0.05 - desiredthetatest,'--g');
+yline(-desiredthetatest*0.05 - desiredthetatest,'--g');
+
+% Step input time (0 and 10 sec)
+xline(0,'--m');
+xline(5,'--m');
+
+% 1 sec settling lines (1 and 11 sec)
+xline(1,'--b');
+xline(6,'--b');
+
+
+
+legend("Model (No Friction)","Model (Friction)","Experimental Position","Input Function","20% Bounds","","","","5% Settling Bounds","","","","Input","","1 Second to Settle","",location="eastoutside");
